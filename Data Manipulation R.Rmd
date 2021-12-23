@@ -1,0 +1,138 @@
+---
+title: " [Assignment] Day 10 - Manipulation Data with R"
+output: html_notebook
+---
+
+# Introduction
+1. Download the data from previous lesson [here](https://drive.google.com/drive/folders/184dVj0hC--GnzPs6WDxoKVPECTUqeR_b?usp=sharing)
+2. Do the following question on each chunks
+
+## 1. Basic Verbs
+```{r}
+# 0. Load the library, add any others library that you want!
+library(dplyr)
+library(tidyr)
+library(utils)
+library(caret)
+```
+
+```{r}
+# 0. Load data train.csv, and show top 10 of the data
+data = read.csv('C:/Users/USER/Documents/Dibimbing/Tugas minggu ke 4/train (1).csv')
+data
+```
+
+```{r}
+# Q1. create new data frame with the following criteria: MSZoning is RL, LotShape is Reg, and Neighborhood not in Timber, and YrSold is greater than 2007 (2)
+new_df = data %>% 
+          filter(MSZoning == 'RL', LotShape == 'Reg', Neighborhood != 'Timber', YrSold > 2007)
+new_df
+```
+
+
+
+```{r}
+# Q2. From data train.csv, use Group by SaleCondition and YrSold, Count How many records each, calculate average sales price and median of YearBuilt and arrange by count of records from high to low (3)
+new_data = data %>%
+              group_by(SaleCondition, YrSold) %>%
+              summarise(record = n(), avg_saleprice = mean(SalePrice), median(YearBuilt)) %>%
+              arrange(desc(record))
+new_data
+```
+
+```{r}
+# Q3. Create new data from table in point 3 with select SaleCondition, YrSold and average sales price columns (0.5)
+data_Q3 = select(new_data, SaleCondition, YrSold, avg_saleprice)
+data_Q3
+```
+
+
+```{r}
+# Q4. from data in point 4. use pivot_wider to expand SaleCondition with values average sales price (0.5)
+pivot_wider(data_Q3, names_from = 'SaleCondition', values_from = 'avg_saleprice')
+```
+## 2. Join Verbs
+```{r}
+# Q1. From data created bellow, join them with retain data from timberland data but not consider to retain data from Brookside (note : join key using YearBuilt) (0.5)
+
+# make sure df is from assignment train.csv (or you can change df into other variables)
+df <- read.csv('C:/Users/USER/Documents/Dibimbing/Tugas minggu ke 4/train (1).csv')
+  
+timberland <- df %>%
+  select(Neighborhood, YearBuilt, LotArea) %>%
+  filter(Neighborhood=='Timber') %>%
+  group_by(Neighborhood, YearBuilt) %>%
+  summarise(max_lot_area = max(LotArea))
+
+brookside <- df %>%
+  select(Neighborhood, YearBuilt, LotArea) %>%
+  filter(Neighborhood=='BrkSide') %>%
+  group_by(Neighborhood, YearBuilt) %>%
+  summarise(max_lot_area = max(LotArea))
+
+### START YOUR CODE HERE ! ###
+ijoin = inner_join(timberland, brookside, by = 'YearBuilt')
+ijoin
+
+```
+
+```{r}
+# Q2. Do the same with point 6 but retain all rows / records! (0.5)
+fjoin = full_join(timberland, brookside, by = 'YearBuilt')
+fjoin
+```
+## 3. Feature Engineering
+```{r}
+# Create new Features from combinations of this following columns:
+# Q1. Absolute difference between remodel date (in year) and year sold (0.5)
+# Q2. Absolute difference between remodel date (in year) and year of construction (0.5)
+# Q3. Average LotArea in each Neighborhood (0.5)
+# Q4. Create three (3) Feature that related to the garage [at least 3 the score is maximum] (1.5)
+
+```
+
+
+```{r}
+#Q1. Absolute difference between remodel date (in year) and year sold (0.5)
+data$Distance = abs(data$YearRemodAdd-data$YrSold)
+data
+```
+
+```{r}
+#Q2. Absolute difference between remodel date (in year) and year of construction (0.5)
+data$Distance2 = abs(data$YearRemodAdd-data$YearBuilt)
+data
+```
+
+
+```{r}
+#Q3. Average LotArea in each Neighborhood (0.5)
+data %>%
+  group_by(Neighborhood) %>%
+  mutate(avg_LotArea = mean(LotArea))
+
+```
+
+
+```{r}
+#Q4. Create three (3) Feature that related to the garage [at least 3 the score is maximum] (1.5)
+
+# 1. Absolute difference between GarageYrBlt and YearBuilt (0.5)
+data$Distance3 = abs(data$GarageYrBlt-data$YearBuilt)
+data
+
+```
+```{r}
+#2. Memfilter GarageCond nya Fa dan ekstrak kolom GarageQual & GarageFinish
+data %>% 
+  filter(GarageCond == 'Fa') %>%
+  select(GarageQual, GarageFinish)
+```
+```{r}
+# 3. mengurutkan GarageArea dari yang terbesar sampai yang terkecil dan group by berdasarkan GarageType
+data %>% 
+  group_by(GarageType) %>% 
+  summarise(area = GarageArea) %>%
+  arrange(desc(area))
+```
+
